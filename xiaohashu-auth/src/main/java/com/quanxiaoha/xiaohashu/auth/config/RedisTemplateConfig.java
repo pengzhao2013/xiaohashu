@@ -1,6 +1,7 @@
 package com.quanxiaoha.xiaohashu.auth.config;
 
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
@@ -11,6 +12,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  * @version 1.0
  * @date 2025-06-02 17:20
  */
+@Configuration
 public class RedisTemplateConfig {
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {

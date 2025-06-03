@@ -7,6 +7,13 @@ public interface UserDOMapper {
 
     int insert(UserDO record);
 
+    /**
+     * 根据手机号查询记录
+     * @param phone
+     * @return
+     */
+    UserDO selectByPhone(String phone);
+
     int insertSelective(UserDO record);
 
     UserDO selectByPrimaryKey(Long id);

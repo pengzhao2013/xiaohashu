@@ -25,4 +25,28 @@ public class RedisTests {
         // 添加一个 key 为 name, value 值为 犬小哈
         redisTemplate.opsForValue().set("name", "犬小哈");
     }
+
+    /**
+     * 判断某个 key 是否存在
+     */
+    @Test
+    void testHasKey() {
+        log.info("key 是否存在：{}", Boolean.TRUE.equals(redisTemplate.hasKey("name")));
+    }
+
+    /**
+     * 获取某个 key 的 value
+     */
+    @Test
+    void testGetValue() {
+        log.info("value 值：{}", redisTemplate.opsForValue().get("name"));
+    }
+
+    /**
+     * 删除某个 key
+     */
+    @Test
+    void testDelete() {
+        redisTemplate.delete("name");
+    }
 }
