@@ -24,6 +24,7 @@
         <!-- 接口日志组件 -->
         <module>xiaoha-spring-boot-starter-biz-operationlog</module>
         <module>xiaoha-spring-boot-starter-jackson</module>
+        <module>xiaoha-spring-boot-starter-biz-context</module>
     </modules>
 
 </project>

@@ -1,4 +1,4 @@
-package com.quanxiaoha.xiaohashu.auth.filter;
+package com.quanxiaoha.framework.biz.context.holder;
 
 import com.alibaba.ttl.TransmittableThreadLocal;
 import com.quanxiaoha.framework.common.constant.GlobalConstants;
@@ -8,10 +8,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * 登录用户上下文
- *
  * @Author : zpstart
- * @Date: 2025-06-04 16:19
+ * @Date: 2025-06-04 18:09
  */
 public class LoginUserContextHolder {
 

@@ -27,6 +27,12 @@
             <groupId>com.quanxiaoha</groupId>
             <artifactId>xiaoha-spring-boot-starter-biz-operationlog</artifactId>
         </dependency>
+        <!-- 上下文组件 -->
+        <dependency>
+            <groupId>com.quanxiaoha</groupId>
+            <artifactId>xiaoha-spring-boot-starter-biz-context</artifactId>
+        </dependency>
+        <!-- Jackson 组件 -->
         <dependency>
             <groupId>com.quanxiaoha</groupId>
             <artifactId>xiaoha-spring-boot-starter-jackson</artifactId>

@@ -3,6 +3,7 @@ package com.quanxiaoha.xiaohashu.auth.service.impl;
 import cn.dev33.satoken.stp.SaTokenInfo;
 import cn.dev33.satoken.stp.StpUtil;
 import com.google.common.base.Preconditions;
+import com.quanxiaoha.framework.biz.context.holder.LoginUserContextHolder;
 import com.quanxiaoha.framework.common.enums.DeletedEnum;
 import com.quanxiaoha.framework.common.enums.StatusEnum;
 import com.quanxiaoha.framework.common.exception.BizException;
@@ -18,7 +19,6 @@ import com.quanxiaoha.xiaohashu.auth.domain.mapper.UserDOMapper;
 import com.quanxiaoha.xiaohashu.auth.domain.mapper.UserRoleDOMapper;
 import com.quanxiaoha.xiaohashu.auth.enums.LoginTypeEnum;
 import com.quanxiaoha.xiaohashu.auth.enums.ResponseCodeEnum;
-import com.quanxiaoha.xiaohashu.auth.filter.LoginUserContextHolder;
 import com.quanxiaoha.xiaohashu.auth.model.vo.user.UserLoginReqVO;
 import com.quanxiaoha.xiaohashu.auth.service.UserService;
 import jakarta.annotation.Resource;
@@ -204,6 +204,7 @@ public class UserServiceImpl implements UserService {
         return Response.success();
     }
 
+    /**
     public static void main(String[] args) {
 
         // 初始化 InheritableThreadLocal 弊端：线程池中无法获取
@@ -222,4 +223,5 @@ public class UserServiceImpl implements UserService {
             System.out.println("异步线程打印用户 ID: " + threadLocal.get());
         }).start();
     }
+     */
 }
