@@ -18,14 +18,15 @@ import com.quanxiaoha.xiaohashu.auth.domain.mapper.UserDOMapper;
 import com.quanxiaoha.xiaohashu.auth.domain.mapper.UserRoleDOMapper;
 import com.quanxiaoha.xiaohashu.auth.enums.LoginTypeEnum;
 import com.quanxiaoha.xiaohashu.auth.enums.ResponseCodeEnum;
+import com.quanxiaoha.xiaohashu.auth.filter.LoginUserContextHolder;
 import com.quanxiaoha.xiaohashu.auth.model.vo.user.UserLoginReqVO;
 import com.quanxiaoha.xiaohashu.auth.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
@@ -56,6 +57,9 @@ public class UserServiceImpl implements UserService {
 
     @Resource
     private TransactionTemplate transactionTemplate;
+
+    @Resource(name = "taskExecutor")
+    private ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     /**
      * 登录与注册
@@ -128,7 +132,6 @@ public class UserServiceImpl implements UserService {
      * @param phone
      * @return
      */
-    @Transactional(rollbackFor = Exception.class)
     public Long registerUser(String phone) {
         return transactionTemplate.execute(status -> {
             try {
@@ -177,5 +180,46 @@ public class UserServiceImpl implements UserService {
                 return null;
             }
         });
+    }
+
+    /**
+     * 退出登录
+     *
+     * @return
+     */
+    @Override
+    public Response<?> logout() {
+        Long userId = LoginUserContextHolder.getUserId();
+
+        log.info("==> 用户退出登录, userId: {}", userId);
+
+        threadPoolTaskExecutor.submit(() -> {
+            Long userId2 = LoginUserContextHolder.getUserId();
+            log.info("==> 异步线程中获取 userId: {}", userId2);
+        });
+
+        // 退出登录 (指定用户 ID)
+        StpUtil.logout(userId);
+
+        return Response.success();
+    }
+
+    public static void main(String[] args) {
+
+        // 初始化 InheritableThreadLocal 弊端：线程池中无法获取
+        ThreadLocal<Long> threadLocal = new InheritableThreadLocal<>();
+
+        // 假设用户 ID 为 1
+        Long userId = 1L;
+
+        // 设置用户 ID 到 InheritableThreadLocal 中
+        threadLocal.set(userId);
+
+        System.out.println("主线程打印用户 ID: " + threadLocal.get());
+
+        // 异步线程
+        new Thread(() -> {
+            System.out.println("异步线程打印用户 ID: " + threadLocal.get());
+        }).start();
     }
 }

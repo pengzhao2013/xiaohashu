@@ -1,11 +1,13 @@
 package com.quanxiaoha.xiaohashu.gateway.auth;
 
+import cn.dev33.satoken.context.SaHolder;
 import cn.dev33.satoken.exception.NotLoginException;
 import cn.dev33.satoken.exception.NotPermissionException;
 import cn.dev33.satoken.exception.NotRoleException;
 import cn.dev33.satoken.reactor.filter.SaReactorFilter;
 import cn.dev33.satoken.router.SaRouter;
 import cn.dev33.satoken.stp.StpUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -16,6 +18,7 @@ import org.springframework.context.annotation.Configuration;
  * @Date: 2025-06-04 11:31
  */
 @Configuration
+@Slf4j
 public class SaTokenConfigure {
     // 注册 Sa-Token全局过滤器
     @Bean
@@ -25,6 +28,7 @@ public class SaTokenConfigure {
                 .addInclude("/**")    /* 拦截全部path */
                 // 鉴权方法：每次访问进入
                 .setAuth(obj -> {
+                    log.info("==================> SaReactorFilter, Path: {}", SaHolder.getRequest().getRequestPath());
                     // 登录校验
                     SaRouter.match("/**") // 拦截所有路由
                             .notMatch("/auth/user/login") // 排除登录接口
@@ -33,7 +37,7 @@ public class SaTokenConfigure {
                     ;
 
                     // 权限认证 -- 不同模块, 校验不同权限 通过 StpInterface 的实现类来获取用户的角色和权限数据
-                    SaRouter.match("/auth/user/logout", r -> StpUtil.checkRole("admin"));
+                    SaRouter.match("/auth/user/logout", r -> StpUtil.checkRole("common_user"));
                     // SaRouter.match("/admin/**", r -> StpUtil.checkPermission("admin"));
                     // SaRouter.match("/goods/**", r -> StpUtil.checkPermission("goods"));
                     // SaRouter.match("/orders/**", r -> StpUtil.checkPermission("orders"));
