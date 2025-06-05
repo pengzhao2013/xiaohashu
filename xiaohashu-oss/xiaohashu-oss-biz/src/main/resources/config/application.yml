@@ -1,0 +1,9 @@
+server:
+  port: 8081
+
+spring:
+  profiles:
+    active: dev
+
+#storage:
+#  type: aliyun # 对象存储类型
