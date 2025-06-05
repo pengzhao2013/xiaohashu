@@ -24,6 +24,8 @@
     <module>xiaohashu-gateway</module>
     <!-- 对象存储服务 -->
     <module>xiaohashu-oss</module>
+    <!-- 用户服务 -->
+    <module>xiaohashu-user</module>
   </modules>
 
   <properties>
@@ -64,6 +66,7 @@
     <jaxb-api.version>2.3.1</jaxb-api.version>
     <activation.version>1.1.1</activation.version>
     <jaxb-runtime.version>2.3.3</jaxb-runtime.version>
+    <feign-form.version>3.8.0</feign-form.version>
   </properties>
 
   <!-- 统一依赖管理 -->
@@ -234,6 +237,23 @@
         <groupId>org.glassfish.jaxb</groupId>
         <artifactId>jaxb-runtime</artifactId>
         <version>${jaxb-runtime.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.quanxiaoha</groupId>
+        <artifactId>xiaohashu-oss-api</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <!-- Feign 表单提交  Feign 扩展库，专门用于处理表单数据的编码
+        它提供了一些增强功能，使 Feign 客户端能够更方便地处理表单提交和文件上传等操作-->
+      <dependency>
+        <groupId>io.github.openfeign.form</groupId>
+        <artifactId>feign-form</artifactId>
+        <version>${feign-form.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.quanxiaoha</groupId>
+        <artifactId>xiaohashu-user-api</artifactId>
+        <version>${revision}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

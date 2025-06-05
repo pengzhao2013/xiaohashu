@@ -6,7 +6,7 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: http://110.42.203.200:8848 # 指定 Nacos 配置中心的服务器地址
+        server-addr: http://localhost:8848 # 指定 Nacos 配置中心的服务器地址
         prefix: ${spring.application.name} # 配置 Data Id 前缀，这里使用应用名称作为前缀 实际会带上-profiles
         group: DEFAULT_GROUP # 所属组
         namespace: xiaohashu # 命名空间
@@ -16,4 +16,4 @@ spring:
         enabled: true # 启用服务发现
         group: DEFAULT_GROUP # 所属组
         namespace: xiaohashu # 命名空间
-        server-addr: 110.42.203.200:8848 # 指定 Nacos 配置中心的服务器地址
+        server-addr: localhost:8848 # 指定 Nacos 配置中心的服务器地址

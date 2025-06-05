@@ -31,13 +31,13 @@ public class SaTokenConfigure {
                     log.info("==================> SaReactorFilter, Path: {}", SaHolder.getRequest().getRequestPath());
                     // 登录校验
                     SaRouter.match("/**") // 拦截所有路由
-                            .notMatch("/auth/user/login") // 排除登录接口
+                            .notMatch("/auth/login") // 排除登录接口
                             .notMatch("/auth/verification/code/send") // 排除验证码发送接口
                             .check(r -> StpUtil.checkLogin()) // 校验是否登录
                     ;
 
                     // 权限认证 -- 不同模块, 校验不同权限 通过 StpInterface 的实现类来获取用户的角色和权限数据
-                    SaRouter.match("/auth/user/logout", r -> StpUtil.checkRole("common_user"));
+                    SaRouter.match("/auth/logout", r -> StpUtil.checkRole("common_user"));
                     // SaRouter.match("/admin/**", r -> StpUtil.checkPermission("admin"));
                     // SaRouter.match("/goods/**", r -> StpUtil.checkPermission("goods"));
                     // SaRouter.match("/orders/**", r -> StpUtil.checkPermission("orders"));
