@@ -5,6 +5,7 @@ import com.quanxiaoha.framework.common.constant.GlobalConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -17,10 +18,13 @@ import reactor.core.publisher.Mono;
  */
 @Component
 @Slf4j
+@Order(-90)
 public class AddUserId2HeaderFilter implements GlobalFilter {
     /**
      *  SaReactorFilter执行优先级最高 权限校验在前面，真正执行到 AddUserId2HeaderFilter 过滤器中时，
      *  要么是接口校验通过了，要么是该接口无需校验两种情况
+     *  仅仅请求头中带有Token是不够的，还需要Sa-Token的认证机制（在这里主要是SaReactorFilter）
+     *  去正确地处理这个Token，并把认证结果（比如LoginId）存放到Sa-Token的上下文中，然后 StpUtil.getLoginId() 才能成功获取到
      * @param exchange 表示当前的 HTTP 请求和响应的上下文，
      *                 包括请求头、请求体、响应头、响应体等信息。可以通过它来获取和修改请求和响应。
      * @param chain 代表网关过滤器链，通过调用 chain.filter(exchange) 方法可以将请求传递给下一个过滤器进行处理。

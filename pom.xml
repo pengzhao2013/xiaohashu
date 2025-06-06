@@ -28,6 +28,7 @@
     <module>xiaohashu-user</module>
     <!--  Key-Value 键值存储服务 -->
     <module>xiaohashu-kv</module>
+    <module>xiaohashu-distributed-id-generator</module>
   </modules>
 
   <properties>
@@ -260,6 +261,11 @@
       <dependency>
         <groupId>com.quanxiaoha</groupId>
         <artifactId>xiaohashu-kv-api</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.quanxiaoha</groupId>
+        <artifactId>xiaohashu-distributed-id-generator-api</artifactId>
         <version>${revision}</version>
       </dependency>
     </dependencies>

@@ -93,3 +93,27 @@ INSERT INTO `xiaohashu`.`t_role_permission_rel` (`id`, `role_id`,
 INSERT INTO `xiaohashu`.`t_role_permission_rel` (`id`, `role_id`,
                                                  `permission_id`, `create_time`, `update_time`, `is_deleted`) VALUES
     (2, 1, 2, now(), now(), b'0');
+# 号段模式分布式id生成服务
+create database if not exists leaf
+CHARACTER set utf8mb4 collate utf8mb4_unicode_ci;
+
+use leaf;
+
+CREATE TABLE `leaf_alloc` (
+                              `biz_tag` varchar(128)  NOT NULL DEFAULT '' COMMENT '区分业务，例如生成用户ID、生成笔记ID',
+                              `max_id` bigint(20) NOT NULL DEFAULT '1' COMMENT '该biz_tag目前所被分配的ID号段的最大值',
+                              `step` int(11) NOT null COMMENT '创建时间' COMMENT '每次分配的号段长度',
+                              `description` varchar(256)  DEFAULT NULL,
+                              `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                              PRIMARY KEY (`biz_tag`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='美团Leaf-segment数据库方案分布式ID生成器';
+
+# 插入测试业务号段数据
+insert into leaf_alloc(biz_tag, max_id, step, description)
+values('leaf-segment-test', 1, 2000, 'Test leaf Segment Mode Get Id');
+# 为小哈书ID业务单独创建一条号段模式分布式ID生成记录
+INSERT INTO `leaf`.`leaf_alloc` (`biz_tag`, `max_id`, `step`, `description`, `update_time`)
+VALUES ('leaf-segment-xiaohashu-id', 10100, 2000, '小哈书 ID', now());
+# 为用户ID业务单独创建一条号段模式分布式ID生成记录
+INSERT INTO `leaf`.`leaf_alloc` (`biz_tag`, `max_id`, `step`, `description`, `update_time`)
+VALUES ('leaf-segment-user-id', 100, 2000, '用户 ID', now());
