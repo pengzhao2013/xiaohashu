@@ -17,15 +17,13 @@ import java.util.UUID;
 @NoArgsConstructor
 @Builder
 public class FindNoteContentRspDTO {
-
     /**
-     * 笔记 ID
+     * 笔记内容 UUID
      */
-    private UUID noteId;
+    private UUID uuid;
 
     /**
      * 笔记内容
      */
     private String content;
-
 }
