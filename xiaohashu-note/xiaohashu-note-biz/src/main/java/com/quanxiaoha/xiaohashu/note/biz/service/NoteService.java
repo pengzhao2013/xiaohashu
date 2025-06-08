@@ -1,9 +1,7 @@
 package com.quanxiaoha.xiaohashu.note.biz.service;
 
 import com.quanxiaoha.framework.common.response.Response;
-import com.quanxiaoha.xiaohashu.note.biz.model.vo.req.FindNoteDetailReqVO;
-import com.quanxiaoha.xiaohashu.note.biz.model.vo.req.PublishNoteReqVO;
-import com.quanxiaoha.xiaohashu.note.biz.model.vo.req.UpdateNoteReqVO;
+import com.quanxiaoha.xiaohashu.note.biz.model.vo.req.*;
 import com.quanxiaoha.xiaohashu.note.biz.model.vo.resp.FindNoteDetailRspVO;
 
 /**
@@ -34,4 +32,31 @@ public interface NoteService {
      * @return
      */
     Response<?> updateNote(UpdateNoteReqVO updateNoteReqVO);
+
+    /**
+     * 删除本地笔记缓存
+     * @param noteId
+     */
+    void deleteNoteLocalCache(Long noteId);
+
+    /**
+     * 删除笔记
+     * @param deleteNoteReqVO
+     * @return
+     */
+    Response<?> deleteNote(DeleteNoteReqVO deleteNoteReqVO);
+
+    /**
+     * 笔记仅对自己可见
+     * @param updateNoteVisibleOnlyMeReqVO
+     * @return
+     */
+    Response<?> visibleOnlyMe(UpdateNoteVisibleOnlyMeReqVO updateNoteVisibleOnlyMeReqVO);
+
+    /**
+     * 笔记置顶 / 取消置顶
+     * @param topNoteReqVO
+     * @return
+     */
+    Response<?> topNote(TopNoteReqVO topNoteReqVO);
 }

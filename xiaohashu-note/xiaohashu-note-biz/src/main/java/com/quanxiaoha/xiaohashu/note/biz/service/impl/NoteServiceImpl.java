@@ -18,9 +18,7 @@ import com.quanxiaoha.xiaohashu.note.biz.enums.NoteStatusEnum;
 import com.quanxiaoha.xiaohashu.note.biz.enums.NoteTypeEnum;
 import com.quanxiaoha.xiaohashu.note.biz.enums.NoteVisibleEnum;
 import com.quanxiaoha.xiaohashu.note.biz.enums.ResponseCodeEnum;
-import com.quanxiaoha.xiaohashu.note.biz.model.vo.req.FindNoteDetailReqVO;
-import com.quanxiaoha.xiaohashu.note.biz.model.vo.req.PublishNoteReqVO;
-import com.quanxiaoha.xiaohashu.note.biz.model.vo.req.UpdateNoteReqVO;
+import com.quanxiaoha.xiaohashu.note.biz.model.vo.req.*;
 import com.quanxiaoha.xiaohashu.note.biz.model.vo.resp.FindNoteDetailRspVO;
 import com.quanxiaoha.xiaohashu.note.biz.rpc.DistributedIdGeneratorRpcService;
 import com.quanxiaoha.xiaohashu.note.biz.rpc.KeyValueRpcService;
@@ -31,8 +29,12 @@ import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.rocketmq.client.producer.SendCallback;
+import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.messaging.Message;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -384,6 +386,10 @@ public class NoteServiceImpl implements NoteService {
             }
         }
 
+        // 删除 Redis 缓存
+        String noteDetailRedisKey = RedisKeyConstants.buildNoteDetailKey(noteId);
+        redisTemplate.delete(noteDetailRedisKey);
+
 
         // 更新笔记元数据表 t_note
         String content = updateNoteReqVO.getContent();
@@ -401,9 +407,26 @@ public class NoteServiceImpl implements NoteService {
 
         noteDOMapper.updateByPrimaryKey(noteDO);
 
-        // 删除 Redis 缓存
-        String noteDetailRedisKey = RedisKeyConstants.buildNoteDetailKey(noteId);
-        redisTemplate.delete(noteDetailRedisKey);
+        // 一致性保证：延迟双删策略
+        // 异步发送延时消息
+        Message<String> message = MessageBuilder.withPayload(String.valueOf(noteId))
+                .build();
+
+        rocketMQTemplate.asyncSend(MQConstants.TOPIC_DELAY_DELETE_NOTE_REDIS_CACHE, message,
+                new SendCallback() {
+                    @Override
+                    public void onSuccess(SendResult sendResult) {
+                        log.info("## 延时删除 Redis 笔记缓存消息发送成功...");
+                    }
+
+                    @Override
+                    public void onException(Throwable e) {
+                        log.error("## 延时删除 Redis 笔记缓存消息发送失败...", e);
+                    }
+                },
+                3000, // 超时时间(毫秒)
+                1 // 延迟级别，1 表示延时 1s
+        );
 
         // 删除本地缓存
 //        LOCAL_CACHE.invalidate(noteId);
@@ -435,6 +458,129 @@ public class NoteServiceImpl implements NoteService {
         }
 
         return Response.success();
+    }
+
+    /**
+     * 删除笔记
+     *
+     * @param deleteNoteReqVO
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Response<?> deleteNote(DeleteNoteReqVO deleteNoteReqVO) {
+        // 笔记 ID
+        Long noteId = deleteNoteReqVO.getId();
+
+        // 逻辑删除
+        NoteDO noteDO = NoteDO.builder()
+                .id(noteId)
+                .status(NoteStatusEnum.DELETED.getCode())
+                .updateTime(LocalDateTime.now())
+                .build();
+
+        int count = noteDOMapper.updateByPrimaryKeySelective(noteDO);
+
+        // 若影响的行数为 0，则表示该笔记不存在
+        if (count == 0) {
+            throw new BizException(ResponseCodeEnum.NOTE_NOT_FOUND);
+        }
+
+        // 删除缓存
+        String noteDetailRedisKey = RedisKeyConstants.buildNoteDetailKey(noteId);
+        redisTemplate.delete(noteDetailRedisKey);
+
+        // 同步发送广播模式 MQ，将所有实例中的本地缓存都删除掉
+        rocketMQTemplate.syncSend(MQConstants.TOPIC_DELETE_NOTE_LOCAL_CACHE, noteId);
+        log.info("====> MQ：删除笔记本地缓存发送成功...");
+
+        return Response.success();
+    }
+
+    /**
+     * 笔记仅对自己可见
+     *
+     * @param updateNoteVisibleOnlyMeReqVO
+     * @return
+     */
+    @Override
+    public Response<?> visibleOnlyMe(UpdateNoteVisibleOnlyMeReqVO updateNoteVisibleOnlyMeReqVO) {
+        // 笔记 ID
+        Long noteId = updateNoteVisibleOnlyMeReqVO.getId();
+
+        // 构建更新 DO 实体类
+        NoteDO noteDO = NoteDO.builder()
+                .id(noteId)
+                .visible(NoteVisibleEnum.PRIVATE.getCode()) // 可见性设置为仅对自己可见
+                .updateTime(LocalDateTime.now())
+                .build();
+
+        // 执行更新 SQL
+        int count = noteDOMapper.updateVisibleOnlyMe(noteDO);
+
+        // 若影响的行数为 0，则表示该笔记无法修改为仅自己可见
+        if (count == 0) {
+            throw new BizException(ResponseCodeEnum.NOTE_CANT_VISIBLE_ONLY_ME);
+        }
+
+        // 删除 Redis 缓存
+        String noteDetailRedisKey = RedisKeyConstants.buildNoteDetailKey(noteId);
+        redisTemplate.delete(noteDetailRedisKey);
+
+        // 同步发送广播模式 MQ，将所有实例中的本地缓存都删除掉
+        rocketMQTemplate.syncSend(MQConstants.TOPIC_DELETE_NOTE_LOCAL_CACHE, noteId);
+        log.info("====> MQ：删除笔记本地缓存发送成功...");
+
+        return Response.success();
+    }
+
+    /**
+     * 笔记置顶 / 取消置顶
+     *
+     * @param topNoteReqVO
+     * @return
+     */
+    @Override
+    public Response<?> topNote(TopNoteReqVO topNoteReqVO) {
+        // 笔记 ID
+        Long noteId = topNoteReqVO.getId();
+        // 是否置顶
+        Boolean isTop = topNoteReqVO.getIsTop();
+
+        // 当前登录用户 ID
+        Long currUserId = LoginUserContextHolder.getUserId();
+
+        // 构建置顶/取消置顶 DO 实体类
+        NoteDO noteDO = NoteDO.builder()
+                .id(noteId)
+                .isTop(isTop)
+                .updateTime(LocalDateTime.now())
+                .creatorId(currUserId) // 只有笔记所有者，才能置顶/取消置顶笔记
+                .build();
+
+        int count = noteDOMapper.updateIsTop(noteDO);
+
+        if (count == 0) {
+            throw new BizException(ResponseCodeEnum.NOTE_CANT_OPERATE);
+        }
+
+        // 删除 Redis 缓存
+        String noteDetailRedisKey = RedisKeyConstants.buildNoteDetailKey(noteId);
+        redisTemplate.delete(noteDetailRedisKey);
+
+        // 同步发送广播模式 MQ，将所有实例中的本地缓存都删除掉
+        rocketMQTemplate.syncSend(MQConstants.TOPIC_DELETE_NOTE_LOCAL_CACHE, noteId);
+        log.info("====> MQ：删除笔记本地缓存发送成功...");
+
+        return Response.success();
+    }
+
+    /**
+     * 删除本地笔记缓存
+     * @param noteId
+     */
+    public void deleteNoteLocalCache(Long noteId) {
+        LOCAL_CACHE.invalidate(noteId);
     }
 
     /**

@@ -19,4 +19,13 @@ public interface NoteDOMapper {
     int updateByPrimaryKeySelective(NoteDO record);
 
     int updateByPrimaryKey(NoteDO record);
+
+    /**
+     *  仅更新笔记状态为正常展示的记录
+     * @param noteDO
+     * @return
+     */
+    int updateVisibleOnlyMe(NoteDO noteDO);
+
+    int updateIsTop(NoteDO noteDO);
 }
