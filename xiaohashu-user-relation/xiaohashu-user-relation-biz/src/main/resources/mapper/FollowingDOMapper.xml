@@ -85,4 +85,8 @@
       create_time = #{createTime,jdbcType=TIMESTAMP}
     where id = #{id,jdbcType=BIGINT}
   </update>
+  <delete id="deleteByUserIdAndFollowingUserId" parameterType="map">
+    delete from t_following
+    where user_id = #{userId} and following_user_id = #{unfollowUserId}
+  </delete>
 </mapper>

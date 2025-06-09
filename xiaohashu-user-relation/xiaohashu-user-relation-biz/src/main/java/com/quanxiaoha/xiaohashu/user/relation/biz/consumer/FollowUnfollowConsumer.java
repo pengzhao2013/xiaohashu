@@ -10,9 +10,11 @@ import com.quanxiaoha.xiaohashu.user.relation.biz.domain.dataobject.FollowingDO;
 import com.quanxiaoha.xiaohashu.user.relation.biz.domain.mapper.FansDOMapper;
 import com.quanxiaoha.xiaohashu.user.relation.biz.domain.mapper.FollowingDOMapper;
 import com.quanxiaoha.xiaohashu.user.relation.biz.model.dto.FollowUserMqDTO;
+import com.quanxiaoha.xiaohashu.user.relation.biz.model.dto.UnfollowUserMqDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.spring.annotation.ConsumeMode;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.springframework.core.io.ClassPathResource;
@@ -28,6 +30,9 @@ import java.util.Objects;
 
 /**
  * 关注、取关 MQ 消费者
+ * 要想消息的顺序消费，需要保证以下两点：
+ * 发送端：在发送 MQ 时，需要将消息发送到同一个队列中，保证先进先出；
+ * 消费端：另外，针对发送到单个队列的顺序消息，消费端不能够并发去消费，否则还是会乱序。服务实例集群中，只能有一个服务实例去消费该队列
  *
  * @author zpstart
  * @version 1.0
@@ -35,7 +40,8 @@ import java.util.Objects;
  */
 @Component
 @RocketMQMessageListener(consumerGroup = "xiaohashu_group", // Group 组
-        topic = MQConstants.TOPIC_FOLLOW_OR_UNFOLLOW // 消费的 Topic 主题
+        topic = MQConstants.TOPIC_FOLLOW_OR_UNFOLLOW, // 消费的 Topic 主题
+        consumeMode = ConsumeMode.ORDERLY // 设置为顺序消费模式
 )
 @Slf4j
 public class FollowUnfollowConsumer implements RocketMQListener<Message> {
@@ -73,7 +79,7 @@ public class FollowUnfollowConsumer implements RocketMQListener<Message> {
         if (Objects.equals(tags, MQConstants.TAG_FOLLOW)) { // 关注
             handleFollowTagMessage(bodyJsonStr);
         } else if (Objects.equals(tags, MQConstants.TAG_UNFOLLOW)) { // 取关
-            // TODO
+            handleUnfollowTagMessage(bodyJsonStr);
         }
     }
 
@@ -139,6 +145,51 @@ public class FollowUnfollowConsumer implements RocketMQListener<Message> {
             String fansRedisKey = RedisKeyConstants.buildUserFansKey(followUserId);
             // 执行脚本
             redisTemplate.execute(script, Collections.singletonList(fansRedisKey), userId, timestamp);
+        }
+    }
+
+    /**
+     * 取关 编程式事务来保证两条删除操作的原子性
+     * @param bodyJsonStr
+     */
+    private void handleUnfollowTagMessage(String bodyJsonStr) {
+        // 将消息体 Json 字符串转为 DTO 对象
+        UnfollowUserMqDTO unfollowUserMqDTO = JsonUtils.parseObject(bodyJsonStr, UnfollowUserMqDTO.class);
+
+        // 判空
+        if (Objects.isNull(unfollowUserMqDTO)) {
+            return;
+        }
+
+        Long userId = unfollowUserMqDTO.getUserId();
+        Long unfollowUserId = unfollowUserMqDTO.getUnfollowUserId();
+        LocalDateTime createTime = unfollowUserMqDTO.getCreateTime();
+
+        // 编程式提交事务
+        boolean isSuccess = Boolean.TRUE.equals(transactionTemplate.execute(status -> {
+            try {
+                // 取关成功需要删除数据库两条记录
+                // 关注表：一条记录
+                int count = followingDOMapper.deleteByUserIdAndFollowingUserId(userId, unfollowUserId);
+
+                // 粉丝表：一条记录
+                if (count > 0) {
+                    fansDOMapper.deleteByUserIdAndFansUserId(unfollowUserId, userId);
+                }
+                return true;
+            } catch (Exception ex) {
+                status.setRollbackOnly(); // 标记事务为回滚
+                log.error("", ex);
+            }
+            return false;
+        }));
+
+        // 若数据库删除成功，更新 Redis，将自己从被取注用户的 ZSet 粉丝列表删除
+        if (isSuccess) {
+            // 被取关用户的粉丝列表 Redis Key
+            String fansRedisKey = RedisKeyConstants.buildUserFansKey(unfollowUserId);
+            // 删除指定粉丝
+            redisTemplate.opsForZSet().remove(fansRedisKey, userId);
         }
     }
 }

@@ -3,6 +3,7 @@ package com.quanxiaoha.xiaohashu.user.relation.biz;
 import com.quanxiaoha.framework.common.util.JsonUtils;
 import com.quanxiaoha.xiaohashu.user.relation.biz.constant.MQConstants;
 import com.quanxiaoha.xiaohashu.user.relation.biz.model.dto.FollowUserMqDTO;
+import com.quanxiaoha.xiaohashu.user.relation.biz.model.dto.UnfollowUserMqDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.client.producer.SendCallback;
@@ -65,6 +66,69 @@ class MQTests {
             Thread.sleep(259200000);
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * 测试：发送对同一个用户关注、取关 MQ
+     */
+    @Test
+    void testSendFollowUnfollowMQ() {
+        // 操作者用户ID
+        Long userId = 100L;
+        // 目标用户ID
+        Long targetUserId = 2L;
+
+        // 考虑到某个用户爆火的情况,使用目标用户 ID 作为 hashKey ,
+        // 那么，大量的消息都会被存放于同一个队列中，造成单点瓶颈，不适合高并发场景
+        // 使用发起者的用户 ID, 可以有效地分散负载，避免单队列瓶颈，提高系统的并发处理能力
+        String hashKey = String.valueOf(userId);
+        for (long i = 0; i < 10; i++) {
+            if (i % 2 == 0) { // 偶数发送关注 MQ
+                log.info("{} 是偶数", i);
+
+                // 发送 MQ
+                // 构建消息体 DTO
+                FollowUserMqDTO followUserMqDTO = FollowUserMqDTO.builder()
+                        .userId(userId)
+                        .followUserId(targetUserId)
+                        .createTime(LocalDateTime.now())
+                        .build();
+
+                // 构建消息对象，并将 DTO 转成 Json 字符串设置到消息体中
+                Message<String> message = MessageBuilder.withPayload(JsonUtils.toJsonString(followUserMqDTO))
+                        .build();
+
+                // 通过冒号连接, 可让 MQ 发送给主题 Topic 时，携带上标签 Tag
+                String destination = MQConstants.TOPIC_FOLLOW_OR_UNFOLLOW + ":" + MQConstants.TAG_FOLLOW;
+
+                // 发送 MQ 消息
+                SendResult sendResult = rocketMQTemplate.syncSendOrderly(destination, message, hashKey);
+
+                log.info("==> MQ 发送结果，SendResult: {}", sendResult);
+            } else { // 取关发送取关 MQ
+                log.info("{} 是奇数", i);
+
+                // 发送 MQ
+                // 构建消息体 DTO
+                UnfollowUserMqDTO unfollowUserMqDTO = UnfollowUserMqDTO.builder()
+                        .userId(userId)
+                        .unfollowUserId(targetUserId)
+                        .createTime(LocalDateTime.now())
+                        .build();
+
+                // 构建消息对象，并将 DTO 转成 Json 字符串设置到消息体中
+                Message<String> message = MessageBuilder.withPayload(JsonUtils.toJsonString(unfollowUserMqDTO))
+                        .build();
+
+                // 通过冒号连接, 可让 MQ 发送给主题 Topic 时，携带上标签 Tag
+                String destination = MQConstants.TOPIC_FOLLOW_OR_UNFOLLOW + ":" + MQConstants.TAG_UNFOLLOW;
+
+                // 发送 MQ 消息
+                SendResult sendResult = rocketMQTemplate.syncSendOrderly(destination, message, hashKey);
+
+                log.info("==> MQ 发送结果，SendResult: {}", sendResult);
+            }
         }
     }
 }
