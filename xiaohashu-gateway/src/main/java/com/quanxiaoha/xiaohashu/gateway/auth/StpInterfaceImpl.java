@@ -33,8 +33,6 @@ public class StpInterfaceImpl implements StpInterface {
     @Resource
     private ObjectMapper objectMapper;
 
-    // 省略...
-
     /**
      * 获取用户角色
      *

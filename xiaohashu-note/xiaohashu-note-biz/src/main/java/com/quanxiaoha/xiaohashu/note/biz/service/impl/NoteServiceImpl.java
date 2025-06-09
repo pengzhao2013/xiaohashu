@@ -374,6 +374,20 @@ public class NoteServiceImpl implements NoteService {
                 break;
         }
 
+        // 当前登录用户 ID
+        Long currUserId = LoginUserContextHolder.getUserId();
+        NoteDO selectNoteDO = noteDOMapper.selectByPrimaryKey(noteId);
+
+        // 笔记不存在
+        if (Objects.isNull(selectNoteDO)) {
+            throw new BizException(ResponseCodeEnum.NOTE_NOT_FOUND);
+        }
+
+        // 判断权限：非笔记发布者不允许更新笔记
+        if (!Objects.equals(currUserId, selectNoteDO.getCreatorId())) {
+            throw new BizException(ResponseCodeEnum.NOTE_CANT_OPERATE);
+        }
+
         // 话题
         Long topicId = updateNoteReqVO.getTopicId();
         String topicName = null;
@@ -412,6 +426,7 @@ public class NoteServiceImpl implements NoteService {
         Message<String> message = MessageBuilder.withPayload(String.valueOf(noteId))
                 .build();
 
+        // 防止此时有其他查询请求并且同时缓存过期
         rocketMQTemplate.asyncSend(MQConstants.TOPIC_DELAY_DELETE_NOTE_REDIS_CACHE, message,
                 new SendCallback() {
                     @Override
@@ -471,6 +486,19 @@ public class NoteServiceImpl implements NoteService {
     public Response<?> deleteNote(DeleteNoteReqVO deleteNoteReqVO) {
         // 笔记 ID
         Long noteId = deleteNoteReqVO.getId();
+
+        NoteDO selectNoteDO = noteDOMapper.selectByPrimaryKey(noteId);
+
+        // 判断笔记是否存在
+        if (Objects.isNull(selectNoteDO)) {
+            throw new BizException(ResponseCodeEnum.NOTE_NOT_FOUND);
+        }
+
+        // 判断权限：非笔记发布者不允许删除笔记
+        Long currUserId = LoginUserContextHolder.getUserId();
+        if (!Objects.equals(currUserId, selectNoteDO.getCreatorId())) {
+            throw new BizException(ResponseCodeEnum.NOTE_CANT_OPERATE);
+        }
 
         // 逻辑删除
         NoteDO noteDO = NoteDO.builder()

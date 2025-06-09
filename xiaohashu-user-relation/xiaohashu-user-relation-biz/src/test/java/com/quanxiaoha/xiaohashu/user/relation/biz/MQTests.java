@@ -31,7 +31,7 @@ class MQTests {
      */
     @Test
     void testBatchSendMQ() {
-        for (long i = 20000; i < 20100; i++) {
+        for (long i = 20000; i < 20300; i++) {
             // 构建消息体 DTO
             FollowUserMqDTO followUserMqDTO = FollowUserMqDTO.builder()
                     .userId(i)
@@ -61,6 +61,10 @@ class MQTests {
                 }
             });
         }
+        try {
+            Thread.sleep(259200000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
-
 }
