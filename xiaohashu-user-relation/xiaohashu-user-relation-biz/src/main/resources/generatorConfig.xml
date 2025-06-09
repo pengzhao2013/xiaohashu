@@ -33,7 +33,7 @@
         </javaTypeResolver>
 
         <!-- DO 实体类存放路径 -->
-        <javaModelGenerator targetPackage="com.quanxiaoha.xiaohashu.user.biz.domain.dataobject"
+        <javaModelGenerator targetPackage="com.quanxiaoha.xiaohashu.user.relation.biz.domain.dataobject"
                             targetProject="src/main/java"/>
 
         <!-- Mapper xml 文件存放路径-->
@@ -41,12 +41,11 @@
                          targetProject="src/main/resources"/>
 
         <!-- Mapper 接口存放路径 -->
-        <javaClientGenerator type="XMLMAPPER" targetPackage="com.quanxiaoha.xiaohashu.user.biz.domain.mapper"
+        <javaClientGenerator type="XMLMAPPER" targetPackage="com.quanxiaoha.xiaohashu.user.relation.biz.domain.mapper"
                              targetProject="src/main/java"/>
 
         <!-- 需要生成的表-实体类 -->
-        <!-- 需要生成的表-实体类 -->
-        <table tableName="t_user" domainObjectName="UserDO"
+        <table tableName="t_fans" domainObjectName="FansDO"
                enableCountByExample="false"
                enableUpdateByExample="false"
                enableDeleteByExample="false"

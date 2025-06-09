@@ -30,6 +30,7 @@
     <module>xiaohashu-kv</module>
     <module>xiaohashu-distributed-id-generator</module>
     <module>xiaohashu-note</module>
+    <module>xiaohashu-user-relation</module>
   </modules>
 
   <properties>
