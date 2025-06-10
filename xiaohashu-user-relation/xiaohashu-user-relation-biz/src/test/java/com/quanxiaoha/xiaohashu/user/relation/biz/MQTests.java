@@ -2,6 +2,8 @@ package com.quanxiaoha.xiaohashu.user.relation.biz;
 
 import com.quanxiaoha.framework.common.util.JsonUtils;
 import com.quanxiaoha.xiaohashu.user.relation.biz.constant.MQConstants;
+import com.quanxiaoha.xiaohashu.user.relation.biz.enums.FollowUnfollowTypeEnum;
+import com.quanxiaoha.xiaohashu.user.relation.biz.model.dto.CountFollowUnfollowMqDTO;
 import com.quanxiaoha.xiaohashu.user.relation.biz.model.dto.FollowUserMqDTO;
 import com.quanxiaoha.xiaohashu.user.relation.biz.model.dto.UnfollowUserMqDTO;
 import jakarta.annotation.Resource;
@@ -129,6 +131,57 @@ class MQTests {
 
                 log.info("==> MQ 发送结果，SendResult: {}", sendResult);
             }
+        }
+    }
+
+    /**
+     * 测试：发送计数 MQ, 以统计粉丝数
+     */
+    @Test
+    void testSendCountFollowUnfollowMQ() {
+        // 循环发送 3200 条 MQ
+        for (long i = 0; i < 3200; i++) {
+            // 构建消息体 DTO
+            CountFollowUnfollowMqDTO countFollowUnfollowMqDTO = CountFollowUnfollowMqDTO.builder()
+                    .userId(i+1) // 关注者用户 ID
+                    .targetUserId(27L) // 目标用户
+                    .type(FollowUnfollowTypeEnum.FOLLOW.getCode())
+                    .build();
+
+            // 构建消息对象，并将 DTO 转成 Json 字符串设置到消息体中
+            org.springframework.messaging.Message<String> message = MessageBuilder.withPayload(JsonUtils.toJsonString(countFollowUnfollowMqDTO))
+                    .build();
+
+            // 发送 MQ 通知计数服务：统计粉丝数
+            rocketMQTemplate.asyncSend(MQConstants.TOPIC_COUNT_FANS, message, new SendCallback() {
+                @Override
+                public void onSuccess(SendResult sendResult) {
+                    log.info("==> 【计数服务：粉丝数】MQ 发送成功，SendResult: {}", sendResult);
+                }
+
+                @Override
+                public void onException(Throwable throwable) {
+                    log.error("==> 【计数服务：粉丝数】MQ 发送异常: ", throwable);
+                }
+            });
+
+            rocketMQTemplate.asyncSend(MQConstants.TOPIC_COUNT_FOLLOWING, message, new SendCallback() {
+                @Override
+                public void onSuccess(SendResult sendResult) {
+                    log.info("==> 【计数服务：关注数】MQ 发送成功，SendResult: {}", sendResult);
+                }
+
+                @Override
+                public void onException(Throwable throwable) {
+                    log.error("==> 【计数服务：关注数】MQ 发送异常: ", throwable);
+                }
+            });
+        }
+
+        try {
+            Thread.sleep(259200000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 }

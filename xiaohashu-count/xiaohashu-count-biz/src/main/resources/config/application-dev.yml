@@ -65,5 +65,4 @@ rocketmq:
     pull-batch-size: 5 # 每次拉取的最大消息数
 logging:
   level:
-    com.quanxiaoha.xiaohashu.user.relation.biz.service: debug
-    com.quanxiaoha.xiaohashu.user.relation.biz.domain.mapper: debug
+    com.quanxiaoha.xiaohashu.count.biz.domain.mapper: debug
