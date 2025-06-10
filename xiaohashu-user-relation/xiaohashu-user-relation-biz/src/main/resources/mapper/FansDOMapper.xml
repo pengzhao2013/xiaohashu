@@ -84,4 +84,15 @@
     where user_id = #{userId}
       and fans_user_id = #{fansUserId}
   </delete>
+  <select id="selectCountByUserId" resultType="long" parameterType="long">
+    select count(1) from t_fans where user_id = #{userId}
+  </select>
+  <select id="selectPageListByUserId" resultMap="BaseResultMap" parameterType="map">
+    select fans_user_id from t_fans
+    where user_id = #{userId} order by create_time desc limit #{offset}, #{limit}
+  </select>
+  <select id="select5000FansByUserId" resultMap="BaseResultMap">
+    select fans_user_id, create_time from t_fans
+    where user_id = #{userId} order by create_time desc limit 5000
+  </select>
 </mapper>

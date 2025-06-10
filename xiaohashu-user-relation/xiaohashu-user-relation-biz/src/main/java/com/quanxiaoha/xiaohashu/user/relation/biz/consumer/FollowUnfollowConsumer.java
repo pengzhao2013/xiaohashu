@@ -130,7 +130,6 @@ public class FollowUnfollowConsumer implements RocketMQListener<Message> {
         }));
 
         log.info("## 数据库添加记录结果：{}", isSuccess);
-        // TODO: 更新 Redis 中被关注用户的 ZSet 粉丝列表
         // 若数据库操作成功，更新 Redis 中被关注用户的 ZSet 粉丝列表
         if (isSuccess) {
             // Lua 脚本

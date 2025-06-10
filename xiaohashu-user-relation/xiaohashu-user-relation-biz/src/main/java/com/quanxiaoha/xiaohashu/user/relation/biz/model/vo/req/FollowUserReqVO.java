@@ -1,4 +1,4 @@
-package com.quanxiaoha.xiaohashu.user.relation.biz.model.vo;
+package com.quanxiaoha.xiaohashu.user.relation.biz.model.vo.req;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

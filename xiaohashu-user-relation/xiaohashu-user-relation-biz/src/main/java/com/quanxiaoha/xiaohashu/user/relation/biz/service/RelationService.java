@@ -1,8 +1,13 @@
 package com.quanxiaoha.xiaohashu.user.relation.biz.service;
 
+import com.quanxiaoha.framework.common.response.PageResponse;
 import com.quanxiaoha.framework.common.response.Response;
-import com.quanxiaoha.xiaohashu.user.relation.biz.model.vo.FollowUserReqVO;
-import com.quanxiaoha.xiaohashu.user.relation.biz.model.vo.UnfollowUserReqVO;
+import com.quanxiaoha.xiaohashu.user.relation.biz.model.vo.req.FindFansListReqVO;
+import com.quanxiaoha.xiaohashu.user.relation.biz.model.vo.req.FindFollowingListReqVO;
+import com.quanxiaoha.xiaohashu.user.relation.biz.model.vo.req.FollowUserReqVO;
+import com.quanxiaoha.xiaohashu.user.relation.biz.model.vo.req.UnfollowUserReqVO;
+import com.quanxiaoha.xiaohashu.user.relation.biz.model.vo.resp.FindFansUserRspVO;
+import com.quanxiaoha.xiaohashu.user.relation.biz.model.vo.resp.FindFollowingUserRspVO;
 
 /**
  * 关注业务
@@ -26,4 +31,18 @@ public interface RelationService {
      * @return
      */
     Response<?> unfollow(UnfollowUserReqVO unfollowUserReqVO);
+
+    /**
+     * 查询关注列表
+     * @param findFollowingListReqVO
+     * @return
+     */
+    PageResponse<FindFollowingUserRspVO> findFollowingList(FindFollowingListReqVO findFollowingListReqVO);
+
+    /**
+     * 查询粉丝列表
+     * @param findFansListReqVO
+     * @return
+     */
+    PageResponse<FindFansUserRspVO> findFansList(FindFansListReqVO findFansListReqVO);
 }

@@ -30,4 +30,9 @@ public class FindUserByIdRspDTO {
      * 头像
      */
     private String avatar;
+
+    /**
+     * 简介
+     */
+    private String introduction;
 }
