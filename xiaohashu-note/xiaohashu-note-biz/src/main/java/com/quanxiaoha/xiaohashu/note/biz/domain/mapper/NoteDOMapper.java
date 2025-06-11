@@ -28,4 +28,6 @@ public interface NoteDOMapper {
     int updateVisibleOnlyMe(NoteDO noteDO);
 
     int updateIsTop(NoteDO noteDO);
+
+    int selectCountByNoteId(Long noteId);
 }

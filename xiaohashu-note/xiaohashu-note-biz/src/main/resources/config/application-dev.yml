@@ -43,7 +43,7 @@ spring:
       database: 0 # Redis 数据库索引（默认为 0）
       host: 110.42.203.200 # Redis 服务器地址
       port: 6379 # Redis 服务器连接端口
-      password: qwe!@# # Redis 服务器连接密码（默认为空）
+      password: qwe123!@# # Redis 服务器连接密码（默认为空）
       timeout: 5s # 读超时时间
       connect-timeout: 5s # 链接超时时间
       lettuce:
@@ -60,7 +60,7 @@ rocketmq:
   name-server: 14.103.232.41:9876 # name server 地址
   producer:
     group: xiaohashu_group
-    send-message-timeout: 3000 # 消息发送超时时间，默认 3s
+    send-message-timeout: 20000 # 消息发送超时时间，默认 3s
     retry-times-when-send-failed: 3 # 同步发送消息失败后，重试的次数
     retry-times-when-send-async-failed: 3 # 异步发送消息失败后，重试的次数
     max-message-size: 4096 # 消息最大大小（单位：字节）

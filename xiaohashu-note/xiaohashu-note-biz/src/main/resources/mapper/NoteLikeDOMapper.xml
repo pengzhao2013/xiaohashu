@@ -90,4 +90,26 @@
       `status` = #{status,jdbcType=TINYINT}
     where id = #{id,jdbcType=BIGINT}
   </update>
+  <select id="selectCountByUserIdAndNoteId" resultType="int" parameterType="map">
+    select count(1) from t_note_like where user_id = #{userId} and note_id = #{noteId} and status = 1 limit 1
+  </select>
+  <select id="selectByUserId" resultMap="BaseResultMap" parameterType="map">
+    select note_id from t_note_like
+    where user_id = #{userId} and status = 1
+  </select>
+  <select id="selectLikedByUserIdAndLimit" resultMap="BaseResultMap" parameterType="map">
+    select note_id, create_time from t_note_like
+    where user_id = #{userId} and status = 1 order by create_time desc limit #{limit}
+  </select>
+  <insert id="insertOrUpdate" parameterType="com.quanxiaoha.xiaohashu.note.biz.domain.dataobject.NoteLikeDO">
+    INSERT INTO t_note_like (user_id, note_id, create_time, status)
+    VALUES (#{userId}, #{noteId}, #{createTime}, #{status})
+    ON DUPLICATE KEY UPDATE
+    create_time = #{createTime}, status = #{status};
+  </insert>
+  <update id="update2UnlikeByUserIdAndNoteId" parameterType="com.quanxiaoha.xiaohashu.note.biz.domain.dataobject.NoteLikeDO">
+    update t_note_like set status = #{status}, create_time = #{createTime}
+    where user_id = #{userId} and note_id = #{noteId} and status = 1
+  </update>
+
 </mapper>
