@@ -1,4 +1,4 @@
-package com.quanxiaoha.xiaohashu.count.biz.model.dto;
+package com.quanxiaoha.xiaohashu.note.biz.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,24 +8,23 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * 点赞、取消点赞笔记MqDTO
+ * 收藏、取消收藏笔记
  *
  * @author zpstart
  * @version 1.0
- * @date 2025-06-11 18:33
+ * @date 2025-06-12 10:48
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CountLikeUnlikeNoteMqDTO {
-
+public class CollectUnCollectNoteMqDTO {
     private Long userId;
 
     private Long noteId;
 
     /**
-     * 0: 取消点赞， 1：点赞
+     * 0: 取消收藏， 1：收藏
      */
     private Integer type;
 

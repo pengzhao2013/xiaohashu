@@ -6,7 +6,7 @@ import com.quanxiaoha.framework.common.util.JsonUtils;
 import com.quanxiaoha.xiaohashu.count.biz.constant.MQConstants;
 import com.quanxiaoha.xiaohashu.count.biz.domain.mapper.NoteCountDOMapper;
 import com.quanxiaoha.xiaohashu.count.biz.domain.mapper.UserCountDOMapper;
-import com.quanxiaoha.xiaohashu.count.biz.model.dto.AggregationCountLikeUnlikeNoteMqDTO;
+import com.quanxiaoha.xiaohashu.count.biz.model.dto.AggregationCountCollectUnCollectNoteMqDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
@@ -17,18 +17,18 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.List;
 
 /**
- * 计数: 笔记点赞数落库
+ * 计数: 笔记收藏数落库
  *
  * @author zpstart
  * @version 1.0
- * @date 2025-06-11 20:37
+ * @date 2025-06-12 15:03
  */
 @Component
-@RocketMQMessageListener(consumerGroup = "xiaohashu_group_" + MQConstants.TOPIC_COUNT_NOTE_LIKE_2_DB, // Group 组
-        topic = MQConstants.TOPIC_COUNT_NOTE_LIKE_2_DB // 主题 Topic
+@RocketMQMessageListener(consumerGroup = "xiaohashu_group_" + MQConstants.TOPIC_COUNT_NOTE_COLLECT_2_DB, // Group 组
+        topic = MQConstants.TOPIC_COUNT_NOTE_COLLECT_2_DB // 主题 Topic
 )
 @Slf4j
-public class CountNoteLike2DBConsumer implements RocketMQListener<String> {
+public class CountNoteCollect2DBConsumer implements RocketMQListener<String> {
 
     @Resource
     private NoteCountDOMapper noteCountDOMapper;
@@ -39,7 +39,6 @@ public class CountNoteLike2DBConsumer implements RocketMQListener<String> {
     @Resource
     private TransactionTemplate transactionTemplate;
 
-    // 每秒创建 5000 个令牌
     @Resource
     private RateLimiter rateLimiter;
 
@@ -50,9 +49,9 @@ public class CountNoteLike2DBConsumer implements RocketMQListener<String> {
 
         log.info("## 消费到了 MQ 【计数: 笔记点赞数入库】, {}...", body);
 
-        List<AggregationCountLikeUnlikeNoteMqDTO> countList = null;
+        List<AggregationCountCollectUnCollectNoteMqDTO> countList = null;
         try {
-            countList = JsonUtils.parseList(body, AggregationCountLikeUnlikeNoteMqDTO.class);
+            countList = JsonUtils.parseList(body, AggregationCountCollectUnCollectNoteMqDTO.class);
         } catch (Exception e) {
             log.error("## 解析 JSON 字符串异常", e);
         }
@@ -67,8 +66,8 @@ public class CountNoteLike2DBConsumer implements RocketMQListener<String> {
                 // 编程式事务，保证两条语句的原子性
                 transactionTemplate.execute(status -> {
                     try {
-                        noteCountDOMapper.insertOrUpdateLikeTotalByNoteId(count, noteId);
-                        userCountDOMapper.insertOrUpdateLikeTotalByUserId(count, creatorId);
+                        noteCountDOMapper.insertOrUpdateCollectTotalByNoteId(count, noteId);
+                        userCountDOMapper.insertOrUpdateCollectTotalByUserId(count, creatorId);
                         return true;
                     } catch (Exception ex) {
                         status.setRollbackOnly(); // 标记事务为回滚
