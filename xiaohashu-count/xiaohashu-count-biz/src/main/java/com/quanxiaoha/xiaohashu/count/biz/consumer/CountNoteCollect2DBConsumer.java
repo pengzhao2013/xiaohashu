@@ -47,7 +47,7 @@ public class CountNoteCollect2DBConsumer implements RocketMQListener<String> {
         // 流量削峰：通过获取令牌，如果没有令牌可用，将阻塞，直到获得
         rateLimiter.acquire();
 
-        log.info("## 消费到了 MQ 【计数: 笔记点赞数入库】, {}...", body);
+        log.info("## 消费到了 MQ 【计数: 笔记收藏数入库】, {}...", body);
 
         List<AggregationCountCollectUnCollectNoteMqDTO> countList = null;
         try {

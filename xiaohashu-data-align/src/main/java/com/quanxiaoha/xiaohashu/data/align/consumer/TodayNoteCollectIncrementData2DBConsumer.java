@@ -5,7 +5,7 @@ import com.quanxiaoha.xiaohashu.data.align.constant.MQConstants;
 import com.quanxiaoha.xiaohashu.data.align.constant.RedisKeyConstants;
 import com.quanxiaoha.xiaohashu.data.align.constant.TableConstants;
 import com.quanxiaoha.xiaohashu.data.align.domain.mapper.InsertRecordMapper;
-import com.quanxiaoha.xiaohashu.data.align.model.dto.LikeUnlikeNoteMqDTO;
+import com.quanxiaoha.xiaohashu.data.align.model.dto.CollectUnCollectNoteMqDTO;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
@@ -25,18 +25,18 @@ import java.util.Collections;
 import java.util.Objects;
 
 /**
- * 日增量数据落库：笔记点赞、取消点赞
+ * 日增量数据落库：笔记收藏、取消收藏
  *
  * @author zpstart
  * @version 1.0
- * @date 2025-06-12 22:31
+ * @date 2025-06-13 13:25
  */
 @Component
-@RocketMQMessageListener(consumerGroup = "xiaohashu_group_data_align_" + MQConstants.TOPIC_COUNT_NOTE_LIKE, // Group 组
-        topic = MQConstants.TOPIC_COUNT_NOTE_LIKE // 主题 Topic
+@RocketMQMessageListener(consumerGroup = "xiaohashu_group_data_align_" + MQConstants.TOPIC_COUNT_NOTE_COLLECT, // Group 组
+        topic = MQConstants.TOPIC_COUNT_NOTE_COLLECT // 主题 Topic
 )
 @Slf4j
-public class TodayNoteLikeIncrementData2DBConsumer implements RocketMQListener<String> {
+public class TodayNoteCollectIncrementData2DBConsumer implements RocketMQListener<String> {
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
@@ -54,30 +54,30 @@ public class TodayNoteLikeIncrementData2DBConsumer implements RocketMQListener<S
 
     @Override
     public void onMessage(String body) {
-        log.info("## TodayNoteLikeIncrementData2DBConsumer 消费到了 MQ: {}", body);
+        log.info("## TodayNoteCollectIncrementData2DBConsumer 消费到了 MQ: {}", body);
 
         // 消息体 JSON 字符串转 DTO
-        LikeUnlikeNoteMqDTO unlikeNoteMqDTO = JsonUtils.parseObject(body, LikeUnlikeNoteMqDTO.class);
+        CollectUnCollectNoteMqDTO collectUnCollectNoteMqDTO = JsonUtils.parseObject(body, CollectUnCollectNoteMqDTO.class);
 
-        if (Objects.isNull(unlikeNoteMqDTO)) {
+        if (Objects.isNull(collectUnCollectNoteMqDTO)) {
             return;
         }
 
-        // 被点赞、取消点赞的笔记 ID
-        Long noteId = unlikeNoteMqDTO.getNoteId();
+        // 被收藏、取消收藏的笔记 ID
+        Long noteId = collectUnCollectNoteMqDTO.getNoteId();
         // 笔记的发布者 ID
-        Long noteCreatorId = unlikeNoteMqDTO.getNoteCreatorId();
+        Long noteCreatorId = collectUnCollectNoteMqDTO.getNoteCreatorId();
 
         // 今日日期
         String date = LocalDate.now()
                 .format(DateTimeFormatter.ofPattern("yyyyMMdd")); // 转字符串
 
-        String bloomKey = RedisKeyConstants.buildBloomUserNoteLikeListKey(date);
+        String bloomKey = RedisKeyConstants.buildBloomUserNoteCollectListKey(date);
 
         // 1. 布隆过滤器判断该日增量数据是否已经记录
         DefaultRedisScript<Long> script = new DefaultRedisScript<>();
         // Lua 脚本路径
-        script.setScriptSource(new ResourceScriptSource(new ClassPathResource("/lua/bloom_today_note_like_check.lua")));
+        script.setScriptSource(new ResourceScriptSource(new ClassPathResource("/lua/bloom_today_note_collect_check.lua")));
         // 返回值类型
         script.setResultType(Long.class);
 
@@ -96,10 +96,10 @@ public class TodayNoteLikeIncrementData2DBConsumer implements RocketMQListener<S
             transactionTemplate.execute(status -> {
                 try {
                     // 将日增量变更数据，分别写入两张表
-                    // - t_data_align_note_like_count_temp_日期_分片序号
-                    // - t_data_align_user_like_count_temp_日期_分片序号
-                    insertRecordMapper.insert2DataAlignNoteLikeCountTempTable(TableConstants.buildTableNameSuffix(date, noteIdHashKey), noteId);
-                    insertRecordMapper.insert2DataAlignUserLikeCountTempTable(TableConstants.buildTableNameSuffix(date, userIdHashKey), noteCreatorId);
+                    // - t_data_align_note_collect_count_temp_日期_分片序号
+                    // - t_data_align_user_collect_count_temp_日期_分片序号
+                    insertRecordMapper.insert2DataAlignNoteCollectCountTempTable(TableConstants.buildTableNameSuffix(date, noteIdHashKey), noteId);
+                    insertRecordMapper.insert2DataAlignUserCollectCountTempTable(TableConstants.buildTableNameSuffix(date, userIdHashKey), noteCreatorId);
 
                     return true;
                 } catch (Exception ex) {
@@ -109,10 +109,10 @@ public class TodayNoteLikeIncrementData2DBConsumer implements RocketMQListener<S
                 return false;
             });
 
+
             // 4. 数据库写入成功后，再添加布隆过滤器中
             RedisScript<Long> bloomAddScript = RedisScript.of("return redis.call('BF.ADD', KEYS[1], ARGV[1])", Long.class);
             redisTemplate.execute(bloomAddScript, Collections.singletonList(bloomKey), noteId);
         }
-        log.info("判断布隆过滤器,result:{}(1 表示已存在，0 表示不存在)", result);
     }
 }
