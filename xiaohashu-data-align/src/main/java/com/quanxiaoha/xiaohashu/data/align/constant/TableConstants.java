@@ -21,6 +21,6 @@ public class TableConstants {
      */
     public static String buildTableNameSuffix(String date, long hashKey) {
         // 拼接完整的表名
-        return "20250612" + TABLE_NAME_SEPARATE + hashKey;
+        return date + TABLE_NAME_SEPARATE + hashKey;
     }
 }
