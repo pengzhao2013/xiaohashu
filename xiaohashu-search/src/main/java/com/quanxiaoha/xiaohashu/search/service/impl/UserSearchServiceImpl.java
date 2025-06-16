@@ -35,7 +35,7 @@ import java.util.Map;
  */
 @Service
 @Slf4j
-public class UserServiceImpl implements UserSearchService {
+public class UserSearchServiceImpl implements UserSearchService {
     @Resource
     private RestHighLevelClient restHighLevelClient;
 

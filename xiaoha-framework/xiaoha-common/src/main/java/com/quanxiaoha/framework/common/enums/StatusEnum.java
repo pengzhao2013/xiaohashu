@@ -13,6 +13,7 @@ import lombok.Getter;
 public enum StatusEnum {
     // 启用
     ENABLE(0),
+
     // 禁用
     DISABLED(1);
 
