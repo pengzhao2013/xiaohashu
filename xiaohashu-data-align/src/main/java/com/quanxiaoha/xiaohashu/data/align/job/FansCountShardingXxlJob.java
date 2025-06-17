@@ -6,6 +6,7 @@ import com.quanxiaoha.xiaohashu.data.align.constant.TableConstants;
 import com.quanxiaoha.xiaohashu.data.align.domain.mapper.DeleteMapper;
 import com.quanxiaoha.xiaohashu.data.align.domain.mapper.SelectMapper;
 import com.quanxiaoha.xiaohashu.data.align.domain.mapper.UpdateMapper;
+import com.quanxiaoha.xiaohashu.data.align.rpc.SearchRpcService;
 import com.xxl.job.core.context.XxlJobHelper;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import jakarta.annotation.Resource;
@@ -37,6 +38,9 @@ public class FansCountShardingXxlJob {
 
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
+
+    @Resource
+    private SearchRpcService searchRpcService;
 
     /**
      * 分片广播任务
@@ -93,6 +97,8 @@ public class FansCountShardingXxlJob {
                         redisTemplate.opsForHash().put(redisKey, RedisKeyConstants.FIELD_FANS_TOTAL, fansTotal);
                     }
                 }
+
+                searchRpcService.rebuildUserDocument(userId);
             });
 
             // 4. 批量物理删除这一批次记录

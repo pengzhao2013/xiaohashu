@@ -35,7 +35,7 @@ public class CreateTableXxlJob {
     @XxlJob("createTableJobHandler")
     public void createTableJobHandler() throws Exception {
         // 表后缀
-        String date = LocalDate.now().plusDays(1) // 明日的日期
+        String date = LocalDate.now()//.plusDays(1) // 明日的日期
                 .format(DateTimeFormatter.ofPattern("yyyyMMdd")); // 转字符串
 
         XxlJobHelper.log("## 开始创建日增量数据表，日期: {}...", date);

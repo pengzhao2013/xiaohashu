@@ -277,6 +277,11 @@
       </dependency>
       <dependency>
         <groupId>com.quanxiaoha</groupId>
+        <artifactId>xiaohashu-search-api</artifactId>
+        <version>${revision}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.quanxiaoha</groupId>
         <artifactId>xiaohashu-distributed-id-generator-api</artifactId>
         <version>${revision}</version>
       </dependency>
