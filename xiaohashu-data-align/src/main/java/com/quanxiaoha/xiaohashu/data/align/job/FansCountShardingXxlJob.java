@@ -58,7 +58,7 @@ public class FansCountShardingXxlJob {
         log.info("分片参数：当前分片序号 = {}, 总分片数 = {}", shardIndex, shardTotal);
 
         // 表后缀
-        String date = LocalDate.now()//.minusDays(1) // 昨日的日期
+        String date = LocalDate.now().minusDays(1) // 昨日的日期
                 .format(DateTimeFormatter.ofPattern("yyyyMMdd")); // 转字符串
         // 表名后缀
         String tableNameSuffix = TableConstants.buildTableNameSuffix(date, shardIndex);

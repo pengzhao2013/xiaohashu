@@ -1,0 +1,14 @@
+server:
+  port: 8093 # 项目启动的端口
+
+spring:
+  profiles:
+    active: dev # 默认激活 dev 本地开发环境
+retry:
+  max-attempts: 3 # 最大重试次数
+  init-interval: 1000 # 初始延迟时间，单位 ms
+  multiplier: 2 # 每次重试间隔加倍（每次乘以 2）
+
+mybatis:
+  # MyBatis xml 配置文件路径
+  mapper-locations: classpath:/mapper/**/*.xml

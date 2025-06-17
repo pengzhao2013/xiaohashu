@@ -34,6 +34,7 @@
     <module>xiaohashu-count</module>
     <module>xiaohashu-data-align</module>
     <module>xiaohashu-search</module>
+    <module>xiaohashu-comment</module>
   </modules>
 
   <properties>

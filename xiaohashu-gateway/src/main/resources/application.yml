@@ -28,6 +28,12 @@ spring:
             - Path=/relation/**
           filters:
             - StripPrefix=1
+        - id: comment
+          uri: lb://xiaohashu-comment
+          predicates:
+            - Path=/comment/**
+          filters:
+            - StripPrefix=1
   data:
     redis:
       database: 0 # Redis 数据库索引（默认为 0）

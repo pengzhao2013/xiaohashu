@@ -1,0 +1,11 @@
+CREATE TABLE comment_content (
+    note_id BIGINT, -- 笔记 ID，分区键
+    year_month TEXT, -- 发布年月
+    content_id UUID, -- 评论内容 ID
+    content TEXT,
+    PRIMARY KEY ((note_id, year_month), content_id)
+    -- 复合分区键 (note_id, year_month)  聚簇列 (content_id)
+    -- 在 Cassandra 中，主键由分区键和聚簇列组成。这里 content_id 作为聚簇列，
+    -- 确保了在同一 note_id 和 year_month 下，并且每个评论内容具有唯一性。
+    -- UUID 类型非常适合用作这样的唯一标识符，因为它能够保证全局唯一性，即使是在分布式环境中
+);
