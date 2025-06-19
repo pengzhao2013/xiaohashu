@@ -304,3 +304,10 @@ CREATE TABLE `t_comment_like` (
                                   PRIMARY KEY (`id`),
                                   UNIQUE KEY `uk_user_id_comment_id` (`user_id`,`comment_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='评论点赞表';
+
+alter table t_comment add column `child_comment_total` bigint(20)
+unsigned DEFAULT 0 COMMENT '二级评论总数（只有一级评论才需要统计）';
+
+ALTER TABLE t_comment ADD COLUMN heat DECIMAL(10, 2) DEFAULT 0 COMMENT '评论热度';
+
+alter table t_comment add column first_reply_comment_id bigint(20) unsigned default 0 COMMENT '最早回复的评论ID (只有一级评论需要)';

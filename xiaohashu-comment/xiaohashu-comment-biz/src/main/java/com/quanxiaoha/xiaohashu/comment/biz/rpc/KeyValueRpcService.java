@@ -3,7 +3,7 @@ package com.quanxiaoha.xiaohashu.comment.biz.rpc;
 import com.google.common.collect.Lists;
 import com.quanxiaoha.framework.common.constant.DateConstants;
 import com.quanxiaoha.framework.common.response.Response;
-import com.quanxiaoha.xiaohashu.comment.biz.bo.CommentBO;
+import com.quanxiaoha.xiaohashu.comment.biz.model.bo.CommentBO;
 import com.quanxiaoha.xiaohashu.kv.api.KeyValueFeignApi;
 import com.quanxiaoha.xiaohashu.kv.dto.req.BatchAddCommentContentReqDTO;
 import com.quanxiaoha.xiaohashu.kv.dto.req.CommentContentReqDTO;

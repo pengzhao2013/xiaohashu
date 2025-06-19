@@ -2,6 +2,7 @@ package com.quanxiaoha.xiaohashu.kv.biz.service;
 
 import com.quanxiaoha.framework.common.response.Response;
 import com.quanxiaoha.xiaohashu.kv.dto.req.BatchAddCommentContentReqDTO;
+import com.quanxiaoha.xiaohashu.kv.dto.req.BatchFindCommentContentReqDTO;
 
 /**
  * @Author: zpstart
@@ -15,4 +16,11 @@ public interface CommentContentService {
      * @return
      */
     Response<?> batchAddCommentContent(BatchAddCommentContentReqDTO batchAddCommentContentReqDTO);
+
+    /**
+     * 批量查询评论内容
+     * @param batchFindCommentContentReqDTO
+     * @return
+     */
+    Response<?> batchFindCommentContent(BatchFindCommentContentReqDTO batchFindCommentContentReqDTO);
 }

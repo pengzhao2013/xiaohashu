@@ -1,4 +1,4 @@
-package com.quanxiaoha.xiaohashu.comment.biz.bo;
+package com.quanxiaoha.xiaohashu.comment.biz.model.bo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

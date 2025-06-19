@@ -41,7 +41,12 @@ public interface MQConstants {
     /**
      * Topic: 计数 - 笔记点赞数落库
      */
-    String TOPIC_COUNT_NOTE_LIKE_2_DB = "CountNoteLike2DBTTopic";
+    String TOPIC_COUNT_NOTE_LIKE_2_DB = "CountNoteLike2DBTopic";
+
+    /**
+     * Topic: 评论热度值更新
+     */
+    String TOPIC_COMMENT_HEAT_UPDATE = "CommentHeatUpdateTopic";
 
     /**
      * Topic: 计数 - 笔记收藏数
@@ -52,6 +57,11 @@ public interface MQConstants {
      * Topic: 计数 - 笔记收藏数落库
      */
     String TOPIC_COUNT_NOTE_COLLECT_2_DB = "CountNoteCollect2DBTTopic";
+
+    /**
+     * Topic: 笔记评论总数计数
+     */
+    String TOPIC_COUNT_NOTE_COMMENT = "CountNoteCommentTopic";
 
     /**
      * Topic: 笔记操作（发布、删除）

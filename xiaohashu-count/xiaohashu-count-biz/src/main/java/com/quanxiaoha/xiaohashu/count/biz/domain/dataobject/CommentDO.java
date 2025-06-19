@@ -1,4 +1,4 @@
-package com.quanxiaoha.xiaohashu.comment.biz.domain.dataobject;
+package com.quanxiaoha.xiaohashu.count.biz.domain.dataobject;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -38,11 +38,9 @@ public class CommentDO {
 
     private Boolean isTop;
 
-    private Long childCommentTotal;
-
-    private Long firstReplyCommentId;
-
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
+
+    private Long childCommentTotal;
 }

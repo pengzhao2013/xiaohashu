@@ -100,4 +100,9 @@
     VALUES (#{noteId}, #{count})
     ON DUPLICATE KEY UPDATE collect_total = collect_total + (#{count});
   </insert>
+  <insert id="insertOrUpdateCommentTotalByNoteId" parameterType="map">
+    INSERT INTO t_note_count (note_id, comment_total)
+    VALUES (#{noteId}, #{count})
+    ON DUPLICATE KEY UPDATE comment_total = comment_total + (#{count});
+  </insert>
 </mapper>
