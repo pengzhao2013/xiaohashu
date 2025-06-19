@@ -1,7 +1,8 @@
 package com.quanxiaoha.xiaohashu.comment.biz.service;
 
+import com.quanxiaoha.framework.common.response.PageResponse;
 import com.quanxiaoha.framework.common.response.Response;
-import com.quanxiaoha.xiaohashu.comment.biz.model.vo.PublishCommentReqVO;
+import com.quanxiaoha.xiaohashu.comment.biz.model.vo.*;
 
 /**
  * 评论业务
@@ -16,4 +17,18 @@ public interface CommentService {
      * @return
      */
     Response<?> publishComment(PublishCommentReqVO publishCommentReqVO);
+
+    /**
+     * 评论列表分页查询
+     * @param findCommentPageListReqVO
+     * @return
+     */
+    PageResponse<FindCommentItemRspVO> findCommentPageList(FindCommentPageListReqVO findCommentPageListReqVO);
+
+    /**
+     * 二级评论分页查询
+     * @param findChildCommentPageListReqVO
+     * @return
+     */
+    PageResponse<FindChildCommentItemRspVO> findChildCommentPageList(FindChildCommentPageListReqVO findChildCommentPageListReqVO);
 }

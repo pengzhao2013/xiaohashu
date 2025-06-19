@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class FindUserByIdRspDTO {
-
     /**
      * 用户 ID
      */

@@ -58,4 +58,54 @@ public interface CommentDOMapper {
      */
     int updateFirstReplyCommentIdByPrimaryKey(@Param("firstReplyCommentId") Long firstReplyCommentId,
                                               @Param("id") Long id);
+
+    /**
+     * 查询评论分页数据
+     * @param noteId
+     * @param offset
+     * @param pageSize
+     * @return
+     */
+    List<CommentDO> selectPageList(@Param("noteId") Long noteId,
+                                   @Param("offset") long offset,
+                                   @Param("pageSize") long pageSize);
+
+    /**
+     * 批量查询二级评论
+     * @param commentIds
+     * @return
+     */
+    List<CommentDO> selectTwoLevelCommentByIds(@Param("commentIds") List<Long> commentIds);
+
+    /**
+     * 查询热门评论
+     * @param noteId
+     * @return
+     */
+    List<CommentDO> selectHeatComments(Long noteId);
+
+    /**
+     * 查询一级评论下子评论总数
+     * @param commentId
+     * @return
+     */
+    Long selectChildCommentTotalById(Long commentId);
+
+    /**
+     * 查询二级评论分页数据
+     * @param parentId
+     * @param offset
+     * @param pageSize
+     * @return
+     */
+    List<CommentDO> selectChildPageList(@Param("parentId") Long parentId,
+                                        @Param("offset") long offset,
+                                        @Param("pageSize") long pageSize);
+
+    /**
+     * 批量查询计数数据
+     * @param commentIds
+     * @return
+     */
+    List<CommentDO> selectCommentCountByIds(@Param("commentIds") List<Long> commentIds);
 }

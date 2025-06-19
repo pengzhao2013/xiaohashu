@@ -17,6 +17,7 @@
     <result column="is_top" jdbcType="TINYINT" property="isTop" />
     <result column="child_comment_total" jdbcType="BIGINT" property="childCommentTotal" />
     <result column="first_reply_comment_id" jdbcType="BIGINT" property="firstReplyCommentId" />
+    <result column="heat" jdbcType="DECIMAL" property="heat" />
     <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
     <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
   </resultMap>
@@ -212,7 +213,10 @@
     where id = #{id,jdbcType=BIGINT}
   </update>
   <select id="selectByCommentIds" resultMap="BaseResultMap" parameterType="list">
-    select id, level, parent_id, user_id, child_comment_total, like_total, first_reply_comment_id
+    select
+    id, user_id, content_uuid, is_content_empty, image_url, like_total,
+    is_top, create_time, first_reply_comment_id, child_comment_total,
+    level, parent_id, heat, note_id
     from t_comment
     where id in
     <foreach collection="commentIds" open="(" separator="," close=")" item="commentId">
@@ -260,4 +264,45 @@
     set first_reply_comment_id = #{firstReplyCommentId}, update_time = now()
     where id = #{id}
   </update>
+  <select id="selectPageList" resultMap="BaseResultMap" parameterType="map">
+    select id, user_id, content_uuid, is_content_empty, image_url, like_total,
+           is_top, create_time, first_reply_comment_id, child_comment_total, heat
+    from t_comment
+    where note_id = #{noteId} and level = 1 order by heat desc
+      limit #{offset}, #{pageSize}
+  </select>
+  <select id="selectTwoLevelCommentByIds" resultMap="BaseResultMap" parameterType="list">
+    select
+    id, user_id, content_uuid, is_content_empty, image_url, like_total, create_time, heat
+    from t_comment
+    where id in
+    <foreach collection="commentIds" open="(" separator="," close=")" item="commentId">
+      #{commentId}
+    </foreach>
+  </select>
+  <select id="selectHeatComments" resultMap="BaseResultMap">
+    select id, heat
+    from t_comment
+    where note_id = #{noteId} and level = 1 order by heat desc limit 500
+  </select>
+  <select id="selectChildCommentTotalById" resultType="long">
+    select child_comment_total from t_comment
+    where id = #{commentId} and level = 1
+  </select>
+  <select id="selectChildPageList" resultMap="BaseResultMap" parameterType="map">
+    select id, user_id, note_id, content_uuid, is_content_empty, image_url, like_total,
+           create_time, reply_user_id, parent_id, reply_comment_id
+    from t_comment
+    where parent_id = #{parentId} and level = 2 order by id asc
+    limit #{offset}, #{pageSize}
+  </select>
+  <select id="selectCommentCountByIds" resultMap="BaseResultMap" parameterType="list">
+    select
+    id, child_comment_total, like_total, level
+    from t_comment
+    where id in
+    <foreach collection="commentIds" open="(" separator="," close=")" item="commentId">
+      #{commentId}
+    </foreach>
+  </select>
 </mapper>

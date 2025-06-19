@@ -20,6 +20,7 @@ public enum ResponseCodeEnum implements BaseExceptionInterface {
     PARAM_NOT_VALID("COMMENT-10001", "参数错误"),
 
     // ----------- 业务异常状态码 -----------
+    COMMENT_NOT_FOUND("COMMENT-20001", "此评论不存在"),
     ;
 
     // 异常码

@@ -5,6 +5,7 @@ import com.github.phantomthief.collection.BufferTrigger;
 import com.google.common.collect.Lists;
 import com.quanxiaoha.framework.common.util.JsonUtils;
 import com.quanxiaoha.xiaohashu.count.biz.constant.MQConstants;
+import com.quanxiaoha.xiaohashu.count.biz.constant.RedisKeyConstants;
 import com.quanxiaoha.xiaohashu.count.biz.domain.mapper.CommentDOMapper;
 import com.quanxiaoha.xiaohashu.count.biz.enums.CommentLevelEnum;
 import com.quanxiaoha.xiaohashu.count.biz.model.dto.CountPublishCommentMqDTO;
@@ -15,6 +16,7 @@ import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
 import org.apache.rocketmq.spring.core.RocketMQListener;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
@@ -41,6 +43,9 @@ public class CountNoteChildCommentConsumer implements RocketMQListener<String> {
 
     @Resource
     private RocketMQTemplate rocketMQTemplate;
+
+    @Resource
+    private RedisTemplate<String, Object> redisTemplate;
 
     private BufferTrigger<String> bufferTrigger = BufferTrigger.<String>batchBlocking()
             .bufferSize(50000) // 缓存队列的最大容量
@@ -86,6 +91,19 @@ public class CountNoteChildCommentConsumer implements RocketMQListener<String> {
             Long parentId = entry.getKey();
             // 评论数
             int count = CollUtil.size(entry.getValue());
+
+            // 更新 Redis 缓存中的评论计数数据
+            // 构建 Key
+            String commentCountHashKey = RedisKeyConstants.buildCountCommentKey(parentId);
+            // 判断 Hash 是否存在
+            boolean hasKey = redisTemplate.hasKey(commentCountHashKey);
+
+            // 若 Hash 存在，则更新子评论总数
+            if (hasKey) {
+                // 累加
+                redisTemplate.opsForHash()
+                        .increment(commentCountHashKey, RedisKeyConstants.FIELD_CHILD_COMMENT_TOTAL, count);
+            }
 
             // 更新一级评论的下级评论总数，进行累加操作
             commentDOMapper.updateChildCommentTotal(parentId, count);
