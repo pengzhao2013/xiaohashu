@@ -224,6 +224,8 @@ public class Comment2DBConsumer {
                     // 同步一级评论到 Redis 热点评论 ZSET 中
                     syncOneLevelComment2RedisZSet(commentBOS);
 
+                    // TODO: 同步二级评论id到 Redis 二级评论分页 ZSET comment:childList: 中
+
                     // 异步发送 MQ 消息
                     rocketMQTemplate.asyncSend(MQConstants.TOPIC_COUNT_NOTE_COMMENT, message, new SendCallback() {
                         @Override
