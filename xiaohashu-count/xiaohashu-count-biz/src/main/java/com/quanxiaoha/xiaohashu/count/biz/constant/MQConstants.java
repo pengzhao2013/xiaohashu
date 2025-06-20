@@ -69,6 +69,16 @@ public interface MQConstants {
     String TOPIC_NOTE_OPERATE = "NoteOperateTopic";
 
     /**
+     * Topic: 评论点赞数更新
+     */
+    String TOPIC_COMMENT_LIKE_OR_UNLIKE = "CommentLikeUnlikeTopic";
+
+    /**
+     * Topic: 计数 - 评论点赞数落库
+     */
+    String TOPIC_COUNT_COMMENT_LIKE_2_DB = "CountCommentLike2DBTTopic";
+
+    /**
      * Tag 标签：笔记发布
      */
     String TAG_NOTE_PUBLISH = "publishNote";

@@ -52,6 +52,11 @@ public class RedisKeyConstants {
     private static final String CHILD_COMMENT_LIST_KEY_PREFIX = "comment:childList:";
 
     /**
+     * Key 前缀：布隆过滤器 - 用户点赞的评论
+     */
+    private static final String BLOOM_COMMENT_LIKES_KEY_PREFIX = "bloom:comment:likes:";
+
+    /**
      * 构建完整 KEY
      * @param commentId
      * @return
@@ -103,5 +108,14 @@ public class RedisKeyConstants {
      */
     public static String buildChildCommentListKey(Long commentId) {
         return CHILD_COMMENT_LIST_KEY_PREFIX + commentId;
+    }
+
+    /**
+     * 构建 布隆过滤器 - 用户点赞的评论 完整 KEY
+     * @param userId
+     * @return
+     */
+    public static String buildBloomCommentLikesKey(Long userId) {
+        return BLOOM_COMMENT_LIKES_KEY_PREFIX + userId;
     }
 }

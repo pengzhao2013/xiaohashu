@@ -43,4 +43,16 @@ public class CommentController {
     public PageResponse<FindChildCommentItemRspVO> findChildCommentPageList(@Validated @RequestBody FindChildCommentPageListReqVO findChildCommentPageListReqVO) {
         return commentService.findChildCommentPageList(findChildCommentPageListReqVO);
     }
+
+    @PostMapping("/like")
+    @ApiOperationLog(description = "评论点赞")
+    public Response<?> likeComment(@Validated @RequestBody LikeCommentReqVO likeCommentReqVO) {
+        return commentService.likeComment(likeCommentReqVO);
+    }
+
+    @PostMapping("/unlike")
+    @ApiOperationLog(description = "评论取消点赞")
+    public Response<?> unlikeComment(@Validated @RequestBody UnLikeCommentReqVO unLikeCommentReqVO) {
+        return commentService.unlikeComment(unLikeCommentReqVO);
+    }
 }

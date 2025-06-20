@@ -30,5 +30,20 @@ public interface CommentService {
      * @param findChildCommentPageListReqVO
      * @return
      */
-    PageResponse<FindChildCommentItemRspVO> findChildCommentPageList(FindChildCommentPageListReqVO findChildCommentPageListReqVO);
+    PageResponse<FindChildCommentItemRspVO> findChildCommentPageList(FindChildCommentPageListReqVO
+                                                   findChildCommentPageListReqVO);
+
+    /**
+     * 评论点赞
+     * @param likeCommentReqVO
+     * @return
+     */
+    Response<?> likeComment(LikeCommentReqVO likeCommentReqVO);
+
+    /**
+     * 取消评论点赞
+     * @param unLikeCommentReqVO
+     * @return
+     */
+    Response<?> unlikeComment(UnLikeCommentReqVO unLikeCommentReqVO);
 }
