@@ -3,6 +3,7 @@ package com.quanxiaoha.xiaohashu.kv.biz.service;
 import com.quanxiaoha.framework.common.response.Response;
 import com.quanxiaoha.xiaohashu.kv.dto.req.BatchAddCommentContentReqDTO;
 import com.quanxiaoha.xiaohashu.kv.dto.req.BatchFindCommentContentReqDTO;
+import com.quanxiaoha.xiaohashu.kv.dto.req.DeleteCommentContentReqDTO;
 
 /**
  * @Author: zpstart
@@ -23,4 +24,11 @@ public interface CommentContentService {
      * @return
      */
     Response<?> batchFindCommentContent(BatchFindCommentContentReqDTO batchFindCommentContentReqDTO);
+
+    /**
+     * 删除评论内容
+     * @param deleteCommentContentReqDTO
+     * @return
+     */
+    Response<?> deleteCommentContent(DeleteCommentContentReqDTO deleteCommentContentReqDTO);
 }

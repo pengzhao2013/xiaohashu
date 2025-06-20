@@ -49,6 +49,7 @@ import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scripting.support.ResourceScriptSource;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -93,6 +94,9 @@ public class CommentServiceImpl implements CommentService {
 
     @Resource
     private CommentLikeDOMapper commentLikeDOMapper;
+
+    @Resource
+    private TransactionTemplate transactionTemplate;
 
     /**
      * 评论详情本地缓存
@@ -646,6 +650,115 @@ public class CommentServiceImpl implements CommentService {
         });
 
         return Response.success();
+    }
+
+    /**
+     * 删除评论
+     * @param deleteCommentReqVO
+     * @return
+     */
+    @Override
+    public Response<?> deleteComment(DeleteCommentReqVO deleteCommentReqVO) {
+        // 被删除的评论 ID
+        Long commentId = deleteCommentReqVO.getCommentId();
+
+        // 1. 校验评论是否存在
+        CommentDO commentDO = commentDOMapper.selectByPrimaryKey(commentId);
+
+        if (Objects.isNull(commentDO)) {
+            throw new BizException(ResponseCodeEnum.COMMENT_NOT_FOUND);
+        }
+
+        // 2. 校验是否有权限删除
+        Long currUserId = LoginUserContextHolder.getUserId();
+        if (!Objects.equals(currUserId, commentDO.getUserId())) {
+            throw new BizException(ResponseCodeEnum.COMMENT_CANT_OPERATE);
+        }
+
+        // 3. 物理删除评论、评论内容
+        // 编程式事务，保证多个操作的原子性
+        transactionTemplate.execute(status -> {
+            try {
+                // 删除评论元数据
+                commentDOMapper.deleteByPrimaryKey(commentId);
+
+                // 删除评论内容
+                keyValueRpcService.deleteCommentContent(commentDO.getNoteId(),
+                        commentDO.getCreateTime(),
+                        commentDO.getContentUuid());
+
+                return null;
+            } catch (Exception ex) {
+                status.setRollbackOnly(); // 标记事务为回滚
+                log.error("", ex);
+                throw ex;
+            }
+        });
+
+        // 4. 删除 Redis 缓存（ZSet 和 String）
+        Integer level = commentDO.getLevel();
+        Long noteId = commentDO.getNoteId();
+        Long parentCommentId = commentDO.getParentId();
+
+        // 根据评论级别，构建对应的 ZSet Key
+        String redisZSetKey = Objects.equals(level, 1) ?
+                RedisKeyConstants.buildCommentListKey(noteId) : RedisKeyConstants.buildChildCommentListKey(parentCommentId);
+
+        // 使用 RedisTemplate 执行管道操作
+        redisTemplate.executePipelined(new SessionCallback<>() {
+            @Override
+            public Object execute(RedisOperations operations) {
+                // 删除 ZSet 中对应评论 ID
+                operations.opsForZSet().remove(redisZSetKey, commentId);
+
+                // 删除评论详情
+                operations.delete(RedisKeyConstants.buildCommentDetailKey(commentId));
+                return null;
+            }
+        });
+
+        // 5. 发布广播 MQ, 将本地缓存删除
+        rocketMQTemplate.asyncSend(MQConstants.TOPIC_DELETE_COMMENT_LOCAL_CACHE, commentId, new SendCallback() {
+            @Override
+            public void onSuccess(SendResult sendResult) {
+                log.info("==> 【删除评论详情本地缓存】MQ 发送成功，SendResult: {}", sendResult);
+            }
+
+            @Override
+            public void onException(Throwable throwable) {
+                log.error("==> 【删除评论详情本地缓存】MQ 发送异常: ", throwable);
+            }
+        });
+
+        // 6. 发送 MQ, 异步去更新计数、删除关联评论、热度值等
+        // 构建消息对象，并将 DO 转成 Json 字符串设置到消息体中
+        Message<String> message = MessageBuilder.withPayload(JsonUtils.toJsonString(commentDO))
+                .build();
+
+        // 异步发送 MQ 消息，提升接口响应速度
+        rocketMQTemplate.asyncSend(MQConstants.TOPIC_DELETE_COMMENT, message, new SendCallback() {
+            @Override
+            public void onSuccess(SendResult sendResult) {
+                log.info("==> 【评论删除】MQ 发送成功，SendResult: {}", sendResult);
+            }
+
+            @Override
+            public void onException(Throwable throwable) {
+                log.error("==> 【评论删除】MQ 发送异常: ", throwable);
+            }
+        });
+
+        return Response.success();
+    }
+
+    /**
+     * 删除本地评论缓存
+     *
+     * @param commentId
+     */
+    @Override
+    public void deleteCommentLocalCache(Long commentId) {
+        LOCAL_CACHE.invalidate(commentId);
     }
 
     /**

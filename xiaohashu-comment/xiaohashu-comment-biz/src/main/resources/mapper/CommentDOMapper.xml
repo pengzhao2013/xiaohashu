@@ -312,4 +312,29 @@
     order by create_time asc
     limit #{limit}
   </select>
+  <delete id="deleteByParentId" parameterType="long">
+    delete from t_comment
+    where parent_id = #{commentId}
+  </delete>
+  <delete id="deleteByIds" parameterType="map">
+    delete from t_comment
+    where id in
+    <foreach collection="commentIds" item="commentId" open="(" separator="," close=")">
+      #{commentId}
+    </foreach>
+  </delete>
+  <select id="selectByReplyCommentIds" resultMap="BaseResultMap" parameterType="long">
+    select
+    <include refid="Base_Column_List" />
+    from t_comment
+    where reply_comment_id in
+    <foreach collection="commentIds" open="(" separator="," close=")" item="commentId">
+      #{commentId}
+    </foreach>
+  </select>
+  <update id="updateChildCommentTotalByPrimaryKey" parameterType="map">
+    update t_comment
+    set child_comment_total = child_comment_total + #{count}, update_time = now()
+    where id = #{id}
+  </update>
 </mapper>
